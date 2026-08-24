@@ -7,7 +7,7 @@ The project converts elevation data into terrain products that can
 support landing-site evaluation, rover traversability analysis, and
 eventually energy-aware mission routing.
 
-![Synthetic terrain overview](docs/assets/v0.1.0-alpha.1-terrain-overview.png)
+![Rover traversability analysis](docs/assets/v0.1.0-alpha.2-traversability-overview.png)
 
 ## Mission question
 
@@ -17,37 +17,20 @@ eventually energy-aware mission routing.
 
 ## Current milestone
 
-### v0.1.0-alpha.1 — Terrain-analysis foundation
+### v0.1.0-alpha.2 — Rover traversability classification
 
-The initial milestone provides:
+The current milestone converts terrain slope into four operational
+classes: preferred, caution, hazardous, and blocked.
 
-- A tested Python 3.12 project
-- Deterministic synthetic cratered terrain
-- Terrain-slope calculation from elevation grids
-- Reproducible summary statistics
-- A presentation-ready elevation and slope visualization
-- Automated Ruff and pytest quality gates
+Of the synthetic test site's 10.24 km²:
 
-### Initial result
+- 49.46% is preferred
+- 32.18% requires caution
+- 6.05% is hazardous
+- 12.30% is blocked
 
-The synthetic test site represents a 10.24 km² region sampled at
-20 meters per cell.
-
-| Measurement | Result |
-|---|---:|
-| Grid shape | 160 × 160 |
-| Elevation relief | 406.34 m |
-| Mean slope | 12.26° |
-| Maximum slope | 57.35° |
-| Cells above provisional 15° limit | 4,699 |
-| Fraction above provisional limit | 18.36% |
-
-The steepest terrain is concentrated along crater walls and rims. This
-creates meaningful obstacles for the route planner planned for later
-milestones.
-
-These results describe synthetic algorithm-development terrain, not a
-real lunar location.
+Blocked crater walls now form barriers that the next route-optimization
+milestone must navigate around.
 
 ## Run the project
 
@@ -55,3 +38,12 @@ Install dependencies:
 
 ```bash
 uv sync
+
+# Roadmap 
+- `v0.1.0-alpha.1`: Terrain-analysis foundation — complete
+- `v0.1.0-alpha.2`: Traversability classification — complete
+- `v0.1.0-alpha.3`: Initial rover route optimization
+- `v0.2.0`: Real lunar elevation data
+- `v0.3.0`: Illumination and energy modeling
+- `v0.4.0`: Interactive mission-control viewer
+- `v1.0.0`: Demonstrable lunar mission-planning system
