@@ -7,7 +7,7 @@ The project converts elevation data into terrain products that can
 support landing-site evaluation, rover traversability analysis, and
 eventually energy-aware mission routing.
 
-![Rover traversability analysis](docs/assets/v0.1.0-alpha.2-traversability-overview.png)
+![A-star rover mission route](docs/assets/v0.1.0-alpha.3-rover-route.png)
 
 ## Mission question
 
@@ -17,20 +17,16 @@ eventually energy-aware mission routing.
 
 ## Current milestone
 
-### v0.1.0-alpha.2 — Rover traversability classification
+### v0.1.0-alpha.3 — Initial rover route optimization
 
-The current milestone converts terrain slope into four operational
-classes: preferred, caution, hazardous, and blocked.
+Lunar Pathfinder now calculates terrain-aware rover routes using A*
+search.
 
-Of the synthetic test site's 10.24 km²:
+The initial synthetic mission produced a 4.415 km route across the test
+site. The rover accepted a 16.48% distance increase while avoiding all
+hazardous and blocked cells.
 
-- 49.46% is preferred
-- 32.18% requires caution
-- 6.05% is hazardous
-- 12.30% is blocked
-
-Blocked crater walls now form barriers that the next route-optimization
-milestone must navigate around.
+The complete project suite contains 46 passing tests.
 
 ## Run the project
 
@@ -42,8 +38,9 @@ uv sync
 # Roadmap 
 - `v0.1.0-alpha.1`: Terrain-analysis foundation — complete
 - `v0.1.0-alpha.2`: Traversability classification — complete
-- `v0.1.0-alpha.3`: Initial rover route optimization
-- `v0.2.0`: Real lunar elevation data
+- `v0.1.0-alpha.3`: Initial rover route optimization — complete
+- `v0.2.0-alpha.1`: Real lunar elevation-data ingestion
+- `v0.2.0-alpha.2`: Real lunar south-pole route
 - `v0.3.0`: Illumination and energy modeling
 - `v0.4.0`: Interactive mission-control viewer
 - `v1.0.0`: Demonstrable lunar mission-planning system

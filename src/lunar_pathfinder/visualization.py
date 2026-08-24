@@ -247,3 +247,139 @@ def save_traversability_overview(
     plt.close(figure)
 
     return destination
+
+
+def save_route_overview(
+    elevation_m: NDArray[np.floating],
+    traversability: NDArray[np.integer],
+    route: tuple[tuple[int, int], ...],
+    cell_size_m: float,
+    output_path: str | Path,
+) -> Path:
+    """Save a glowing rover route over terrain and hazard maps."""
+    elevation = np.asarray(elevation_m, dtype=np.float64)
+    classes = np.asarray(traversability, dtype=np.uint8)
+
+    if elevation.ndim != 2 or elevation.shape != classes.shape:
+        raise ValueError("terrain products must be matching 2D grids")
+
+    if not route:
+        raise ValueError("route must contain at least one cell")
+
+    destination = Path(output_path)
+    destination.parent.mkdir(parents=True, exist_ok=True)
+
+    height_km = elevation.shape[0] * cell_size_m / 1_000.0
+    width_km = elevation.shape[1] * cell_size_m / 1_000.0
+    extent = (0.0, width_km, 0.0, height_km)
+
+    route_rows = np.array([cell[0] for cell in route])
+    route_columns = np.array([cell[1] for cell in route])
+    route_x_km = (route_columns + 0.5) * cell_size_m / 1_000.0
+    route_y_km = (route_rows + 0.5) * cell_size_m / 1_000.0
+
+    class_cmap = ListedColormap(["#3ddc97", "#f4d35e", "#f28f3b", "#d7263d"])
+    class_norm = BoundaryNorm(
+        [-0.5, 0.5, 1.5, 2.5, 3.5],
+        class_cmap.N,
+    )
+
+    figure, axes = plt.subplots(
+        nrows=1,
+        ncols=2,
+        figsize=(13.5, 6.4),
+        constrained_layout=True,
+    )
+    figure.patch.set_facecolor("#080b12")
+    figure.suptitle(
+        "Lunar Pathfinder — A* Rover Mission Route",
+        color="white",
+        fontsize=17,
+        fontweight="bold",
+    )
+
+    axes[0].imshow(
+        elevation,
+        cmap="gray",
+        origin="lower",
+        extent=extent,
+    )
+    axes[0].set_title("Terrain Route", color="white")
+
+    axes[1].imshow(
+        classes,
+        cmap=class_cmap,
+        norm=class_norm,
+        origin="lower",
+        extent=extent,
+        interpolation="nearest",
+    )
+    axes[1].set_title("Operational Route", color="white")
+
+    for axis in axes:
+        # Wide translucent strokes create the glowing-route effect.
+        axis.plot(
+            route_x_km,
+            route_y_km,
+            color="#ffd166",
+            linewidth=7.0,
+            alpha=0.18,
+            solid_capstyle="round",
+        )
+        axis.plot(
+            route_x_km,
+            route_y_km,
+            color="#ffe8a3",
+            linewidth=3.2,
+            alpha=0.65,
+            solid_capstyle="round",
+        )
+        axis.plot(
+            route_x_km,
+            route_y_km,
+            color="white",
+            linewidth=1.2,
+            solid_capstyle="round",
+        )
+
+        axis.scatter(
+            route_x_km[0],
+            route_y_km[0],
+            s=130,
+            color="#3ddc97",
+            edgecolor="white",
+            linewidth=1.5,
+            label="Landing site",
+            zorder=5,
+        )
+        axis.scatter(
+            route_x_km[-1],
+            route_y_km[-1],
+            s=150,
+            marker="*",
+            color="#69d2ff",
+            edgecolor="white",
+            linewidth=1.2,
+            label="Science target",
+            zorder=5,
+        )
+
+        axis.set_xlabel("Easting (km)")
+        axis.set_ylabel("Northing (km)")
+        axis.set_facecolor("#111827")
+        axis.tick_params(colors="white")
+        axis.xaxis.label.set_color("white")
+        axis.yaxis.label.set_color("white")
+        axis.legend(loc="upper left")
+
+        for spine in axis.spines.values():
+            spine.set_color("#667085")
+
+    figure.savefig(
+        destination,
+        dpi=180,
+        facecolor=figure.get_facecolor(),
+    )
+    plt.close(figure)
+
+    return destination

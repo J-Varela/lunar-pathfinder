@@ -1,6 +1,6 @@
 [project]
 name = "lunar-pathfinder"
-version = "0.1.0a2"
+version = "0.1.0a3"
 description = "Lunar south-pole terrain analysis and rover route-optimization system."
 readme = "README.md"
 authors = [
