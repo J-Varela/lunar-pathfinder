@@ -17,3 +17,5 @@ outputs/figures/*
 !outputs/figures/.gitkeep
 outputs/missions/*
 !outputs/missions/.gitkeep
+
+outputs/

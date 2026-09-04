@@ -7,6 +7,8 @@ import numpy as np
 from matplotlib.colors import BoundaryNorm, ListedColormap
 from numpy.typing import NDArray
 
+from lunar_pathfinder.analysis import RouteAnalysisResult, TerrainAnalysisResult
+
 
 def save_terrain_overview(
     elevation_m: NDArray[np.floating],
@@ -383,3 +385,272 @@ def save_route_overview(
     plt.close(figure)
 
     return destination
+
+
+def save_route_visualization(
+    analysis: TerrainAnalysisResult,
+    route_analysis: RouteAnalysisResult,
+    output_path: str | Path,
+) -> Path:
+    """Save a rover route over the lunar elevation model."""
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+
+    elevation = analysis.raster.elevation_m
+    route = route_analysis.route
+
+    rows = np.asarray([cell[0] for cell in route.path])
+    columns = np.asarray([cell[1] for cell in route.path])
+
+    start = route.path[0]
+    destination = route.path[-1]
+
+    figure, axis = plt.subplots(figsize=(10, 10))
+
+    image = axis.imshow(
+        elevation,
+        origin="upper",
+        cmap="gray",
+    )
+
+    axis.plot(
+        columns,
+        rows,
+        linewidth=2.0,
+        label="A* route",
+    )
+
+    axis.scatter(
+        start[1],
+        start[0],
+        s=80,
+        label="Start",
+        zorder=3,
+    )
+
+    axis.scatter(
+        destination[1],
+        destination[0],
+        s=80,
+        label="Destination",
+        zorder=3,
+    )
+
+    axis.set_title("Lunar Pathfinder — de Gerlache Rim Rover Route")
+    axis.set_xlabel("Raster column")
+    axis.set_ylabel("Raster row")
+    axis.legend()
+
+    figure.colorbar(
+        image,
+        ax=axis,
+        label="Elevation (m)",
+    )
+
+    figure.tight_layout()
+    figure.savefig(
+        output,
+        dpi=180,
+        bbox_inches="tight",
+    )
+    plt.close(figure)
+
+    return output
+
+
+def save_traversability_route_visualization(
+    analysis: TerrainAnalysisResult,
+    route_analysis: RouteAnalysisResult,
+    output_path: str | Path,
+) -> Path:
+    """Save a rover route over the traversability classification grid."""
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+
+    grid = analysis.traversability
+    route = route_analysis.route
+
+    rows = np.asarray([cell[0] for cell in route.path])
+    columns = np.asarray([cell[1] for cell in route.path])
+
+    start = route.path[0]
+    destination = route.path[-1]
+
+    cmap = ListedColormap(
+        [
+            "#2ca02c",
+            "#ffcc00",
+            "#ff7f0e",
+            "#d62728",
+        ]
+    )
+
+    norm = BoundaryNorm(
+        [-0.5, 0.5, 1.5, 2.5, 3.5],
+        cmap.N,
+    )
+
+    figure, axis = plt.subplots(figsize=(10, 10))
+
+    image = axis.imshow(
+        grid,
+        origin="upper",
+        cmap=cmap,
+        norm=norm,
+    )
+
+    axis.plot(
+        columns,
+        rows,
+        linewidth=2.0,
+        label="A* route",
+    )
+
+    axis.scatter(
+        start[1],
+        start[0],
+        s=80,
+        label="Start",
+        zorder=3,
+    )
+
+    axis.scatter(
+        destination[1],
+        destination[0],
+        s=80,
+        label="Destination",
+        zorder=3,
+    )
+
+    axis.set_title("Lunar Pathfinder — de Gerlache Rim Traversability Route")
+    axis.set_xlabel("Raster column")
+    axis.set_ylabel("Raster row")
+    axis.legend()
+
+    colorbar = figure.colorbar(
+        image,
+        ax=axis,
+        ticks=[0, 1, 2, 3],
+    )
+
+    colorbar.ax.set_yticklabels(
+        [
+            "Preferred",
+            "Caution",
+            "Hazardous",
+            "Blocked",
+        ]
+    )
+
+    figure.tight_layout()
+    figure.savefig(
+        output,
+        dpi=180,
+        bbox_inches="tight",
+    )
+    plt.close(figure)
+
+    return output
+
+
+def save_route_comparison_visualization(
+    analysis: TerrainAnalysisResult,
+    route_analysis: RouteAnalysisResult,
+    output_path: str | Path,
+) -> Path:
+    """Compare the optimized rover route with a straight-line path."""
+    output = Path(output_path)
+    output.parent.mkdir(parents=True, exist_ok=True)
+
+    grid = analysis.traversability
+    route = route_analysis.route
+
+    rows = np.asarray([cell[0] for cell in route.path])
+    columns = np.asarray([cell[1] for cell in route.path])
+
+    start = route.path[0]
+    destination = route.path[-1]
+
+    cmap = ListedColormap(
+        [
+            "#2ca02c",
+            "#ffcc00",
+            "#ff7f0e",
+            "#d62728",
+        ]
+    )
+
+    norm = BoundaryNorm(
+        [-0.5, 0.5, 1.5, 2.5, 3.5],
+        cmap.N,
+    )
+
+    figure, axis = plt.subplots(figsize=(10, 10))
+
+    image = axis.imshow(
+        grid,
+        origin="upper",
+        cmap=cmap,
+        norm=norm,
+    )
+
+    axis.plot(
+        columns,
+        rows,
+        linewidth=2.0,
+        label="Optimized A* route",
+    )
+
+    axis.plot(
+        [start[1], destination[1]],
+        [start[0], destination[0]],
+        linestyle="--",
+        linewidth=1.5,
+        label="Straight-line path",
+    )
+
+    axis.scatter(
+        start[1],
+        start[0],
+        s=80,
+        label="Start",
+        zorder=3,
+    )
+
+    axis.scatter(
+        destination[1],
+        destination[0],
+        s=80,
+        label="Destination",
+        zorder=3,
+    )
+
+    axis.set_title("Lunar Pathfinder — Optimized vs Straight-Line Route")
+    axis.set_xlabel("Raster column")
+    axis.set_ylabel("Raster row")
+    axis.legend()
+
+    colorbar = figure.colorbar(
+        image,
+        ax=axis,
+        ticks=[0, 1, 2, 3],
+    )
+
+    colorbar.ax.set_yticklabels(
+        [
+            "Preferred",
+            "Caution",
+            "Hazardous",
+            "Blocked",
+        ]
+    )
+
+    figure.tight_layout()
+    figure.savefig(
+        output,
+        dpi=180,
+        bbox_inches="tight",
+    )
+    plt.close(figure)
+
+    return output
